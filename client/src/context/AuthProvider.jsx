@@ -13,6 +13,7 @@ import auth from "../firebase/firebase.init";
 const AuthProvider = ({ children }) => {
   const provider = new GoogleAuthProvider();
   const [user, setUser] = useState(null);
+  console.log(user);
 
   const signIn = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);

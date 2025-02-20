@@ -1,49 +1,58 @@
+import { FcGoogle } from "react-icons/fc";
+import loginImg from "../assets/login.avif";
+import { useContext } from "react";
+import authContext from "../context/AuthContext";
+import { toast } from "react-toastify";
+import useAxiosPublic from "../hooks/useAxiosPublic";
+import { useNavigate } from "react-router-dom";
+
 const Login = () => {
+  const { googleSignIn } = useContext(authContext);
+  const axiosPublic = useAxiosPublic();
+  const navigate = useNavigate();
+
+  const handleGoogleLogin = () => {
+    googleSignIn().then((result) => {
+      // Extract user info from the result
+      const user = result?.user;
+
+      // Construct user data
+      const userData = {
+        name: user.displayName || "Unknown User",
+        email: user.email || "No Email Found",
+        photo: user.photoURL,
+        timeStamp: Date.now(),
+      };
+
+      // Check if email is null
+      if (!user.email) {
+        console.error("Email is null. Full user object:", user);
+        toast.error("Unable to fetch email. Please try again.");
+        return;
+      }
+
+      // Save user to the database
+      axiosPublic.post("/users", userData);
+      navigate("/");
+      toast.success("Login Successful!");
+    });
+  };
+
   return (
-    <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row-reverse">
-        <div className="text-center lg:text-left">
-          <h1 className="text-5xl font-bold">Login now!</h1>
-          <p className="py-6">
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
-            a id nisi.
-          </p>
-        </div>
-        <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-          <form className="card-body">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                type="email"
-                placeholder="email"
-                className="input input-bordered"
-                required
-              />
-            </div>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                type="password"
-                placeholder="password"
-                className="input input-bordered"
-                required
-              />
-              <label className="label">
-                <a href="#" className="label-text-alt link link-hover">
-                  Forgot password?
-                </a>
-              </label>
-            </div>
-            <div className="form-control mt-6">
-              <button className="btn btn-primary">Login</button>
-            </div>
-          </form>
-        </div>
+    <div className="flex items-center justify-center">
+      {/* login image */}
+      <div>
+        <img src={loginImg} />
+      </div>
+      {/* login with google button */}
+      <div className="space-y-3">
+        <h3 className="font-semibold text-3xl">Login With Google</h3>
+        <h2
+          onClick={handleGoogleLogin}
+          className="flex justify-center cursor-pointer"
+        >
+          <FcGoogle size={50} />
+        </h2>
       </div>
     </div>
   );
