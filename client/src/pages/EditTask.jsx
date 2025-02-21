@@ -3,6 +3,8 @@ import { FaEdit } from "react-icons/fa";
 import useAxiosPublic from "../hooks/useAxiosPublic";
 import authContext from "../context/AuthContext";
 import { toast } from "react-toastify";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
 const EditTask = () => {
   const { user } = useContext(authContext);
   const axiosPublic = useAxiosPublic();
@@ -12,6 +14,7 @@ const EditTask = () => {
   const [updatedTitle, setUpdatedTitle] = useState("");
   const [updatedDescription, setUpdatedDescription] = useState("");
 
+  //   fetching task data
   useEffect(() => {
     if (user?.email) {
       axiosPublic.get(`/tasks?email=${user.email}`).then((res) => {
@@ -20,6 +23,7 @@ const EditTask = () => {
     }
   }, [axiosPublic, user?.email]);
 
+  //   update function
   const handleEditClick = (task) => {
     setSelectedTask(task);
     setUpdatedTitle(task.title);
@@ -50,6 +54,45 @@ const EditTask = () => {
     setIsModalOpen(false);
   };
 
+  const confirmDelete = (id) => {
+    toast(
+      ({ closeToast }) => (
+        <div className="flex items-center justify-between gap-2 p-2">
+          <p className="text-sm text-gray-700 flex-1">
+            Are you sure delete your task?
+          </p>
+          <div className="flex gap-2">
+            <button
+              className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded"
+              onClick={() => {
+                handleDelete(id);
+                closeToast();
+              }}
+            >
+              Yes
+            </button>
+            <button
+              className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded"
+              onClick={closeToast}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ),
+      { autoClose: false, closeOnClick: false }
+    );
+  };
+
+  //   function for delete task
+  const handleDelete = async (id) => {
+    const { data } = await axiosPublic.delete(`/delete-task/${id}`);
+    console.log(data);
+    if (data.deletedCount > 0) {
+      toast.success("Task deleted successfully");
+    }
+  };
+
   return (
     <div className="w-11/12 mx-auto">
       <h3 className="py-8 text-4xl text-center font-semibold">
@@ -62,12 +105,22 @@ const EditTask = () => {
               <h3 className="font-semibold">
                 {index + 1}. {task.title}
               </h3>
-              <button
-                className="cursor-pointer"
-                onClick={() => handleEditClick(task)}
-              >
-                <FaEdit size={20} />
-              </button>
+              <div className="flex gap-4">
+                <button
+                  className="cursor-pointer text-red-500"
+                  onClick={() => confirmDelete(task._id)}
+                >
+                  <RiDeleteBin6Line size={20} />
+                </button>
+
+                {/* edit button */}
+                <button
+                  className="cursor-pointer text-green-500"
+                  onClick={() => handleEditClick(task)}
+                >
+                  <FaEdit size={20} />
+                </button>
+              </div>
             </div>
             <p>{task.description}</p>
           </div>

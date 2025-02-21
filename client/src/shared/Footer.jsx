@@ -12,7 +12,7 @@ const Footer = () => {
         <TiHomeOutline size={25} />
       </Link>
       <Link to="/edit">
-        <BsPencilSquare size={25} />
+        <BsPencilSquare size={20} />
       </Link>
       <Link to="/addTask" className="bg-primary text-white rounded-full p-2">
         <FaPlus size={25} />

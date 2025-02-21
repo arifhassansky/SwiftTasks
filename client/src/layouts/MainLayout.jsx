@@ -9,7 +9,7 @@ const MainLayout = () => {
       <Navbar />
       <Outlet />
       <Footer />
-      <ToastContainer />
+      <ToastContainer autoClose={2000} />
     </div>
   );
 };
