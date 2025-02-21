@@ -39,7 +39,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex flex-col lg:flex-row items-center justify-center mb-28">
       {/* login image */}
       <div>
         <img src={loginImg} />

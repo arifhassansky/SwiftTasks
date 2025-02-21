@@ -33,8 +33,8 @@ const AddTask = () => {
   };
 
   return (
-    <div className="flex items-center justify-center py-12">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+    <div className="flex items-center justify-center mt-6 lg:mt-12 mb-28">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-lg">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Add a New Task
         </h2>

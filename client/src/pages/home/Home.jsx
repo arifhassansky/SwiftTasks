@@ -121,14 +121,15 @@ const Home = () => {
   return (
     <div className="w-11/12 mx-auto">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex justify-between gap-8">
+        {/* Flex container for columns */}
+        <div className="flex flex-col lg:flex-row justify-between gap-8">
           {/* To-Do */}
           <Droppable droppableId="To-Do">
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[250px]"
+                className="w-full lg:w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[250px]"
               >
                 <h3 className="font-bold text-2xl mb-8 text-amber-400 text-center">
                   To Do
@@ -145,7 +146,7 @@ const Home = () => {
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[150px]"
+                className="w-full lg:w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[150px]"
               >
                 <h3 className="font-bold text-2xl mb-8 text-primary text-center">
                   In Progress
@@ -162,18 +163,18 @@ const Home = () => {
           </Droppable>
 
           {/* Completed */}
-          <Droppable droppableId="Completed">
+          <Droppable droppableId="Done">
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[150px]"
+                className="w-full lg:w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[150px]"
               >
                 <h3 className="font-bold text-2xl mb-8 text-green-500 text-center">
-                  Completed
+                  Done
                 </h3>
                 {renderTasks(
-                  "Completed",
+                  "Done",
                   "bg-green-500",
                   "bg-green-300",
                   "text-white"
