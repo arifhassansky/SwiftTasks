@@ -1,4 +1,5 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const { ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -25,6 +26,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const usersCollection = client.db("SwiftTasks").collection("users");
+    const tasksCollection = client.db("SwiftTasks").collection("tasks");
 
     // send user data to the database
     app.post("/users", async (req, res) => {
@@ -37,6 +39,59 @@ async function run() {
       const userData = req.body;
       const result = await usersCollection.insertOne(userData);
       res.send(result);
+    });
+
+    // add user task
+    app.post("/add-task", async (req, res) => {
+      const taskData = req.body;
+      const result = await tasksCollection.insertOne(taskData);
+      res.send(result);
+    });
+
+    // get user tasks
+    app.get("/tasks", async (req, res) => {
+      const userEmail = req.query.email;
+      const tasks = await tasksCollection
+        .find({ email: userEmail })
+        .sort({ order: 1 })
+        .toArray();
+      res.send(tasks);
+    });
+
+    app.put("/tasks/reorder", async (req, res) => {
+      const { tasks } = req.body;
+
+      const bulkOps = tasks.map((task) => ({
+        updateOne: {
+          filter: { _id: new ObjectId(task._id) },
+          update: { $set: { order: task.order } },
+        },
+      }));
+
+      await tasksCollection.bulkWrite(bulkOps);
+    });
+
+    app.put("/tasks/:id", async (req, res) => {
+      const { id } = req.params;
+      const { category } = req.body;
+
+      try {
+        // Update the task in MongoDB
+        const updatedTask = await tasksCollection.updateOne(
+          { _id: new ObjectId(id) }, // Make sure to convert id to ObjectId
+          { $set: { category } } // Update the category field
+        );
+
+        // Check if any document was updated
+        if (updatedTask.matchedCount === 0) {
+          return res.status(404).send("Task not found");
+        }
+
+        res.send("Task updated successfully");
+      } catch (error) {
+        console.error("Error updating task:", error);
+        res.status(500).send("Server error");
+      }
     });
 
     // Send a ping to confirm a successful connection
