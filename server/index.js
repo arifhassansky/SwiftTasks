@@ -61,14 +61,31 @@ async function run() {
     app.put("/tasks/reorder", async (req, res) => {
       const { tasks } = req.body;
 
-      const bulkOps = tasks.map((task) => ({
-        updateOne: {
-          filter: { _id: new ObjectId(task._id) },
-          update: { $set: { order: task.order } },
-        },
-      }));
+      console.log("Received reorder request with tasks:", tasks);
 
-      await tasksCollection.bulkWrite(bulkOps);
+      try {
+        // Update each task's order and category in the database
+        for (const task of tasks) {
+          console.log("Updating task:", task);
+
+          const updateResult = await tasksCollection.updateOne(
+            { _id: new ObjectId(task._id) }, // Filter by task ID
+            { $set: { order: parseInt(task.order), category: task.category } } // Update order and category
+          );
+
+          console.log("Update result for task:", updateResult);
+
+          // Check if the task was updated
+          if (updateResult.matchedCount === 0) {
+            console.error("Task not found:", task._id);
+          }
+        }
+
+        res.status(200).json({ message: "Tasks reordered successfully" });
+      } catch (error) {
+        console.error("Error reordering tasks:", error);
+        res.status(500).json({ message: "Error reordering tasks", error });
+      }
     });
 
     app.put("/tasks/:id", async (req, res) => {

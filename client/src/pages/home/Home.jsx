@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
 import authContext from "../../context/AuthContext";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -26,31 +26,9 @@ const Home = () => {
     },
   });
 
-  // Mutation to update a task's category
-  const updateTaskCategory = useMutation({
-    mutationFn: async ({ taskId, category }) => {
-      await axiosPublic.put(`/tasks/${taskId}`, { category });
-    },
-    onSuccess: () => {
-      // Invalidate the tasks query to refetch data
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-    },
-  });
-
-  // Mutation to reorder tasks
-  const reorderTasks = useMutation({
-    mutationFn: async (reorderedTasks) => {
-      await axiosPublic.put(`/tasks/reorder`, { tasks: reorderedTasks });
-    },
-    onSuccess: () => {
-      // Invalidate the tasks query to refetch data
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-    },
-  });
-
   // Handle drag-and-drop events
   const onDragEnd = async (result) => {
-    if (!result.destination) return; // If dropped outside a droppable area, do nothing
+    if (!result.destination) return;
 
     const { source, destination } = result;
 
@@ -62,7 +40,7 @@ const Home = () => {
       (task) => task._id === result.draggableId
     );
 
-    if (!movedTask) return; // If the task is not found, do nothing
+    if (!movedTask) return;
 
     // Update the task's category if it's dropped in a different category
     if (source.droppableId !== destination.droppableId) {
@@ -81,33 +59,25 @@ const Home = () => {
       order: index, // Update the order based on the new position
     }));
 
-    // Update the local state with the new order
+    // Update the local state with the new order (optimistic update)
     queryClient.setQueryData(["tasks"], reorderedTasks);
 
     try {
-      // Update the task's category on the server (if it changed)
-      if (source.droppableId !== destination.droppableId) {
-        await updateTaskCategory.mutateAsync({
-          taskId: movedTask._id,
-          category: movedTask.category,
-        });
-      }
+      // Send the updated task list to the server
+      await axiosPublic.put("/tasks/reorder", {
+        tasks: reorderedTasks,
+      });
 
-      // Update the order of all tasks on the server
-      await reorderTasks.mutateAsync(reorderedTasks);
+      console.log("Tasks reordered successfully");
+
+      // Invalidate the tasks query to refetch the updated data
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
-      console.error("Error updating tasks:", error);
+      console.error("Error reordering tasks:", error);
+
+      // Revert the local state if the server update fails
+      queryClient.setQueryData(["tasks"], tasks);
     }
-
-    // Create a new order array to send to the server
-    const reorderedTask = updatedTasks.map((task, index) => ({
-      _id: task._id,
-      order: index,
-    }));
-
-    await axiosPublic.put(`/tasks/reorder`, {
-      tasks: reorderedTask,
-    });
   };
 
   // Helper function to render tasks for a specific category
