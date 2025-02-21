@@ -20,8 +20,11 @@ const Home = () => {
     if (!result.destination) return;
 
     const { source, destination } = result;
+
+    // Create a copy of the tasks array
     const updatedTasks = [...tasks];
 
+    // Remove the task from its original position
     const [movedTask] = updatedTasks.splice(source.index, 1);
     movedTask.category = destination.droppableId;
     updatedTasks.splice(destination.index, 0, movedTask);
@@ -31,20 +34,16 @@ const Home = () => {
     // Create a new order array to send to the server
     const reorderedTasks = updatedTasks.map((task, index) => ({
       _id: task._id,
-      order: index, // Assuming you want to set the order based on index
+      order: index,
     }));
 
-    try {
-      // First, update the category of the moved task
-      await axiosPublic.put(`/tasks/${movedTask._id}`, {
-        category: movedTask.category,
-      });
+    await axiosPublic.put(`/tasks/${movedTask._id}`, {
+      category: movedTask.category,
+    });
 
-      // Then, send the reordered tasks to the server
-      await axiosPublic.put(`/tasks/reorder`, { tasks: reorderedTasks });
-    } catch (error) {
-      console.error("Failed to update task category and order", error);
-    }
+    await axiosPublic.put(`/tasks/reorder`, {
+      tasks: reorderedTasks,
+    });
   };
 
   return (
@@ -57,7 +56,7 @@ const Home = () => {
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[150px]"
+                className="w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[250px]"
               >
                 <h3 className="font-bold text-2xl mb-8 text-amber-400 text-center ">
                   To Do
@@ -70,14 +69,20 @@ const Home = () => {
                       draggableId={task._id}
                       index={index}
                     >
-                      {(provided) => (
+                      {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="p-4 my-2 rounded bg-amber-200"
+                          className={`p-4 my-2 rounded  ${
+                            snapshot.isDragging
+                              ? "bg-amber-100"
+                              : "bg-amber-200"
+                          } `}
                         >
-                          <h3>{task.title}</h3>
+                          <h3 className="font-semibold">
+                            {index + 1}. {task.title}
+                          </h3>
                           <p>{task.description}</p>
                         </div>
                       )}
@@ -107,14 +112,18 @@ const Home = () => {
                       draggableId={task._id}
                       index={index}
                     >
-                      {(provided) => (
+                      {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="p-4 my-2 rounded bg-blue-500 text-white"
+                          className={`p-4 my-2 rounded  text-white ${
+                            snapshot.isDragging ? "bg-blue-300" : "bg-blue-500"
+                          } `}
                         >
-                          <h3>{task.title}</h3>
+                          <h3 className="font-semibold">
+                            {index + 1}. {task.title}
+                          </h3>
                           <p>{task.description}</p>
                         </div>
                       )}
@@ -131,28 +140,33 @@ const Home = () => {
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="w-1/3 mt-8 bg-gray-50 py-4 px-8 min-h-[150px]"
+                className="w-1/3 mt-8 bg-gray-100 py-4 px-8 min-h-[150px]"
               >
                 <h3 className="font-bold text-2xl mb-8 text-green-500 text-center">
                   Completed
                 </h3>
                 {tasks
                   .filter((task) => task.category === "Completed")
-                  .slice(0, 3) // Limit to 3 tasks
                   .map((task, index) => (
                     <Draggable
                       key={task._id}
                       draggableId={task._id}
                       index={index}
                     >
-                      {(provided) => (
+                      {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="p-4 my-2 rounded bg-green-500 text-white"
+                          className={`p-4 my-2 rounded  text-white ${
+                            snapshot.isDragging
+                              ? "bg-green-300"
+                              : "bg-green-500"
+                          } `}
                         >
-                          <h3>{task.title}</h3>
+                          <h3 className="font-semibold">
+                            {index + 1}. {task.title}
+                          </h3>
                           <p>{task.description}</p>
                         </div>
                       )}

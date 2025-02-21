@@ -78,8 +78,8 @@ async function run() {
       try {
         // Update the task in MongoDB
         const updatedTask = await tasksCollection.updateOne(
-          { _id: new ObjectId(id) }, // Make sure to convert id to ObjectId
-          { $set: { category } } // Update the category field
+          { _id: new ObjectId(id) },
+          { $set: { category } }
         );
 
         // Check if any document was updated
@@ -92,6 +92,22 @@ async function run() {
         console.error("Error updating task:", error);
         res.status(500).send("Server error");
       }
+    });
+
+    // update a specific task
+    app.put("/update-task/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          title: req.body.title,
+          description: req.body.description,
+        },
+      };
+
+      const result = await tasksCollection.updateOne(query, updateDoc);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
